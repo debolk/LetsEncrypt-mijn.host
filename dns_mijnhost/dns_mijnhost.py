@@ -179,15 +179,16 @@ class Authenticator(dns_common.DNSAuthenticator):
 
 	@classmethod
 	def add_parser_arguments(cls, add: Callable[..., None],
-	                         default_propagation_seconds: int = 10) -> None:
+							default_propagation_seconds: int = 20) -> None:
 		super().add_parser_arguments(add, default_propagation_seconds)
 		add('credentials', help='Mijn.host credentials INI file')
 
 	def more_info(self) -> str:
-		return ("This plugin configures a DNS TXT record in mijn.host to respond to a "
-		        "dns-01 challenge, using their API.")
+		return ("This plugin configures a DNS TXT record in mijn.host " +
+				"to respond to a dns-01 challenge, using their API.")
 
-	def _validate_credentials(self, credentials: CredentialsConfiguration) -> None:
+	@staticmethod
+	def _validate_credentials(credentials: CredentialsConfiguration) -> None:
 		key = credentials.conf('api-key')
 		if not key:
 			raise errors.PluginError(f"No API key configured in {credentials.confobj.filename}")
