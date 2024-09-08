@@ -1,3 +1,26 @@
+
+To install download the released .whl file and in a terminal in the same directory run:
+
+```
+pip install certbot_dns_mijnhost-<VERSION>-py3-none-any.whl
+```
+------------------------------------------
+Usage:
+The plugin requires a credentials file in order to connect to mijn.host, it should look like this
+```
+# credentials.ini
+dns_mijnhost_api_key = "<mijn.host provided API key>"
+```
+File permissions should be 0600.
+
+When requesting a certificate with certbot use:
+```
+certbot certonly -d <domain> -a dns-mijnhost --dns-mijnhost-credentials <credentials file path>
+```
+You can also specify ```-i apache``` or ```-i nginx``` to have to certificate automatically installed for the websites.
+Then you don't need ```certonly -d <domain>```
+
+------------------------------------------
 To work on this plugin:
 
 ```
@@ -29,14 +52,15 @@ pip install -e dns_mijnhost/
 certbot_test plugins
 ```
 
-Plugin requires a credentials file in order to connect to mijn.host, it should look like this
-```
-# credentials.ini
-dns_mijnhost_api_key = "<mijn.host provided API key>"
-```
-File permissions should be 0600.
-
 Dry-run test command:
 ```
 certbot certonly -a dns-mijnhost --dns-mijnhost-credentials <credentials file path> -d bolkhuis.nl --dry-run --config-dir test/config --work-dir test/work --logs-dir test/logs
+```
+------------------------------------------
+To build for deployment:
+
+
+```
+. certbot/venv/bin/activate
+pip wheel dns_mijnhost/ --wheel-dir=releases/ --no-deps
 ```
