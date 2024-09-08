@@ -4,14 +4,23 @@ To work on this plugin:
 git clone https://github.com/certbot/certbot
 sudo apt update
 sudo apt install python3-venv libaugeas0
-    (sudo pacman -S python3-venv augeas for ArchLinux)
+```
 
+
+If using ArchLinux, use this instead of apt:
+```
+sudo pacman -S python3-venv augeas
+```
+
+After installing run this to create a virtual environment:
+```
 cd certbot
 python tools/venv.py
 . venv/bin/activate (for activating virtual environment)
 ```
 And point IDE (if applicable) to certbot/venv/bin/python3.12
 
+------------------------------------------
 To test plugin in certbot dev environment:
 
 ```
