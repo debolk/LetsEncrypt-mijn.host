@@ -37,9 +37,12 @@ class MijnHostConnection:
 		"""
 		logger.info("Getting list of domains")
 		self.conn = http.client.HTTPSConnection("mijn.host")
-		self.conn.request("GET", f"/api/v2/domains", "", self.headers)
+		self.conn.request("GET", "/api/v2/domains/", "", self.headers)
 		res = self.conn.getresponse()
-		data = json.loads(res.read().decode("utf-8"))
+		data = res.read().decode("utf-8")
+		logger.debug(data)
+		logger.debug(self.conn.host)
+		data = json.loads(data)
 
 		if data["status"] != 200:
 			raise errors.PluginError(f"Failed to get domains: {data["status_description"]}")
@@ -53,13 +56,14 @@ class MijnHostConnection:
 		:param domain: the subdomain to get the parent from
 		:return: the parent domain if it exists, None otherwise
 		"""
+		logger.info("Finding parent domain of: %s", domain)
 		domains = self.get_domains()
 		for dom in domains:
 			if dom["domain"] in domain:
 				if dom["status"] != "Active":
 					raise errors.PluginError(f"Parent domain {dom["domain"]} not active")
 				return dom["domain"]
-		raise errors.PluginError(f"Parent domain of {domain} not present in mijn.host account associated with this API key")
+		raise errors.PluginError(f"Parent domain of {domain} not present in mijn.host account")
 
 	def get_dns_records(self, domain: str) -> list[Any]:
 		"""
@@ -240,10 +244,14 @@ class Authenticator(dns_common.DNSAuthenticator):
 			raise errors.PluginError("mijn.host API key not provided")
 
 	def _perform(self, domain: str, validation_name: str, validation: str) -> None:
-		self._get_connection().update_domain_record(domain, validation_name, validation, 900)
+		conn = self._get_connection()
+		parent_domain = conn.find_parent_domain(domain)
+		self._get_connection().update_domain_record(parent_domain, validation_name, validation, 900)
 
 	def _cleanup(self, domain: str, validation_name: str, validation: str) -> None:
-		self._get_connection().delete_domain_record(domain, validation_name)
+		conn = self._get_connection()
+		parent_domain = conn.find_parent_domain(domain)
+		self._get_connection().delete_domain_record(parent_domain, validation_name)
 
 	def _get_connection(self) -> "MijnHostConnection":
 		if self.connection is None:
