@@ -24,11 +24,42 @@ class MijnHostConnection:
 		self.conn = None
 		self.headers = {
 			'Accept': 'application/json',
-			'User-Agent': 'my-application/1.0.0',
+			'User-Agent': 'certbot-dns-mijnhost/1.1.0',
 			'Content-Type': 'application/json',
 			'API-Key': api_key
 		}
 		self.api_key = api_key
+
+	def get_domains(self) -> list[dict[str, Any]]:
+		"""
+		Gets list of domains
+		:return:
+		"""
+		logger.info("Getting list of domains")
+		self.conn = http.client.HTTPSConnection("mijn.host")
+		self.conn.request("GET", f"/api/v2/domains", "", self.headers)
+		res = self.conn.getresponse()
+		data = json.loads(res.read().decode("utf-8"))
+
+		if data["status"] != 200:
+			raise errors.PluginError(f"Failed to get domains: {data["status_description"]}")
+
+		return data["data"]["domains"]
+
+	def find_parent_domain(self, domain: str) -> Optional[str]:
+		"""
+		Finds parent domain of subdomain
+
+		:param domain: the subdomain to get the parent from
+		:return: the parent domain if it exists, None otherwise
+		"""
+		domains = self.get_domains()
+		for dom in domains:
+			if dom["domain"] in domain:
+				if dom["status"] != "Active":
+					raise errors.PluginError(f"Parent domain {dom["domain"]} not active")
+				return dom["domain"]
+		raise errors.PluginError(f"Parent domain of {domain} not present in mijn.host account associated with this API key")
 
 	def get_dns_records(self, domain: str) -> list[Any]:
 		"""
