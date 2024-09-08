@@ -5,10 +5,11 @@ Import json to format responses to dicts
 import http.client
 import json
 import logging
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from certbot import errors
 from certbot.plugins import dns_common
+from certbot.plugins.dns_common import CredentialsConfiguration
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class MijnHostConnection:
 	"""
 
 	def __init__(self, api_key):
-		self.conn = http.client.HTTPSConnection("mijn.host")
+		self.conn = None
 		self.headers = {
 			'Accept': 'application/json',
 			'User-Agent': 'my-application/1.0.0',
@@ -37,6 +38,7 @@ class MijnHostConnection:
 		:return: the DNS records found, None if failure
 		"""
 		logger.info('Getting DNS records for domain: %s', domain)
+		self.conn = http.client.HTTPSConnection("mijn.host")
 		self.conn.request("GET", f"/api/v2/domains/{domain}/dns", "", self.headers)
 		res = self.conn.getresponse()
 		data = json.loads(res.read().decode("utf-8"))
@@ -56,6 +58,7 @@ class MijnHostConnection:
 		"""
 		logger.debug("Payload: %s", payload)
 
+		self.conn = http.client.HTTPSConnection("mijn.host")
 		self.conn.request("PUT", f"/api/v2/domains/{domain}/dns", payload, self.headers)
 		res = self.conn.getresponse()
 		data = json.loads(res.read().decode("utf-8"))
@@ -100,6 +103,13 @@ class MijnHostConnection:
 		"""
 		records = self.get_dns_records(domain)
 
+		logger.debug("Attempting to update %s to %s", record_name, record_new_value)
+
+		if record_name[-1] != ".":
+			logger.debug("Record name lacks trailing .: %s", record_name)
+			record_name += "."
+			logger.debug("Sanitized record name: %s", record_name)
+
 		updated = False
 
 		# search for dns record and update if applicable
@@ -108,7 +118,7 @@ class MijnHostConnection:
 			if record["name"] == record_name:
 
 				record["value"] = record_new_value
-				if (ttl > 0):
+				if ttl > 0:
 					record["ttl"] = ttl
 				updated = True
 
@@ -138,6 +148,11 @@ class MijnHostConnection:
 		"""
 		records = self.get_dns_records(domain)
 
+		if record_name[-1] != ".":
+			logger.debug("Record name lacks trailing .: %s", record_name)
+			record_name += "."
+			logger.debug("Sanitized record name: %s", record_name)
+
 		# search for dns record and update if applicable
 		for record in records:
 
@@ -157,20 +172,36 @@ class Authenticator(dns_common.DNSAuthenticator):
 
 	def __init__(self, *args: Any, **kwargs: Any) -> None:
 		super().__init__(*args, **kwargs)
+		logger.info("Initializing mijn.host authenticator")
 		self.connection = None
-		self.api_key = kwargs.get('api_key', None)
+		self.api_key = None
+		self.credentials: Optional[CredentialsConfiguration] = None
 
 	@classmethod
 	def add_parser_arguments(cls, add: Callable[..., None],
 	                         default_propagation_seconds: int = 10) -> None:
 		super().add_parser_arguments(add, default_propagation_seconds)
-		add('api_key', help='Mijn.host API key')
+		add('credentials', help='Mijn.host credentials INI file')
 
 	def more_info(self) -> str:
 		return ("This plugin configures a DNS TXT record in mijn.host to respond to a "
 		        "dns-01 challenge, using their API.")
 
+	def _validate_credentials(self, credentials: CredentialsConfiguration) -> None:
+		key = credentials.conf('api-key')
+		if not key:
+			raise errors.PluginError(f"No API key configured in {credentials.confobj.filename}")
+
 	def _setup_credentials(self) -> None:
+		self.credentials = self._configure_credentials(
+			"credentials",
+			"Mijn.host credentials INI file",
+			None,
+			self._validate_credentials
+		)
+		self.api_key = self.credentials.conf('api_key')
+
+		logger.debug("API key: %s", self.api_key)
 		if self.api_key is not None:
 			self.connection = MijnHostConnection(self.api_key)
 		else:
