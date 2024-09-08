@@ -29,7 +29,14 @@ pip install -e dns_mijnhost/
 certbot_test plugins
 ```
 
+Plugin requires a credentials file in order to connect to mijn.host, it should look like this
+```
+# credentials.ini
+dns_mijnhost_api_key = "<mijn.host provided API key>"
+```
+File permissions should be 0600.
+
 Dry-run test command:
 ```
-certbot certonly -a dns-mijnhost --dns-mijnhost-api_key <API_KEY> -d bolkhuis.nl --dry-run --config-dir test/config --work-dir test/work --logs-dir test/logs
+certbot certonly -a dns-mijnhost --dns-mijnhost-credentials <credentials file path> -d bolkhuis.nl --dry-run --config-dir test/config --work-dir test/work --logs-dir test/logs
 ```
