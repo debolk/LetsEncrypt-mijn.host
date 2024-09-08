@@ -1,3 +1,11 @@
+
+To install download the released .whl file and in a terminal in the same directory run:
+
+```
+pip install certbot_dns_mijnhost-<VERSION>-py3-none-any.whl
+```
+
+------------------------------------------
 To work on this plugin:
 
 ```
@@ -39,4 +47,12 @@ File permissions should be 0600.
 Dry-run test command:
 ```
 certbot certonly -a dns-mijnhost --dns-mijnhost-credentials <credentials file path> -d bolkhuis.nl --dry-run --config-dir test/config --work-dir test/work --logs-dir test/logs
+```
+------------------------------------------
+To build for deployment:
+
+
+```
+. certbot/venv/bin/activate
+pip wheel dns_mijnhost/ --wheel-dir=releases/ --no-deps
 ```
