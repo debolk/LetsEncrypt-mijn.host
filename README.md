@@ -18,7 +18,8 @@ When requesting a certificate with certbot use:
 certbot certonly -d <domain> -a dns-mijnhost --dns-mijnhost-credentials <credentials file path>
 ```
 You can also specify ```-i apache``` or ```-i nginx``` to have to certificate automatically installed for the websites.
-Then you don't need ```certonly -d <domain>```
+You can omit ```certonly -d <domain>``` in that case, e.g.:
+``` certbot -i nginx -a dns-mijnhost --dns-mijnhost-credentials <credentials file>```
 
 ------------------------------------------
 To work on this plugin:
