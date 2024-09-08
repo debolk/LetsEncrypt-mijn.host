@@ -1,5 +1,5 @@
-plugin/.idea/
-plugin/plugin.iml
+dns_mijnhost/.idea/
+dns_mijnhost/plugin.iml
 certbot/
 
 # Byte-compiled / optimized / DLL files
