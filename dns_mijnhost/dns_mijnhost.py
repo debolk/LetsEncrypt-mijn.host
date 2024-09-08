@@ -24,7 +24,7 @@ class MijnHostConnection:
 		self.conn = None
 		self.headers = {
 			'Accept': 'application/json',
-			'User-Agent': 'certbot-dns-mijnhost/1.1.0',
+			'User-Agent': 'certbot-dns-mijnhost/1.1.1',
 			'Content-Type': 'application/json',
 			'API-Key': api_key
 		}
@@ -44,10 +44,10 @@ class MijnHostConnection:
 		logger.debug(self.conn.host)
 		data = json.loads(data)
 
-		if data["status"] != 200:
-			raise errors.PluginError(f"Failed to get domains: {data["status_description"]}")
+		if data['status'] != 200:
+			raise errors.PluginError(f"Failed to get domains: {data['status_description']}")
 
-		return data["data"]["domains"]
+		return data['data']['domains']
 
 	def find_parent_domain(self, domain: str) -> Optional[str]:
 		"""
@@ -59,10 +59,10 @@ class MijnHostConnection:
 		logger.info("Finding parent domain of: %s", domain)
 		domains = self.get_domains()
 		for dom in domains:
-			if dom["domain"] in domain:
-				if dom["status"] != "Active":
-					raise errors.PluginError(f"Parent domain {dom["domain"]} not active")
-				return dom["domain"]
+			if dom['domain'] in domain:
+				if dom['status'] != "Active":
+					raise errors.PluginError(f"Parent domain {dom['domain']} not active")
+				return dom['domain']
 		raise errors.PluginError(f"Parent domain of {domain} not present in mijn.host account")
 
 	def get_dns_records(self, domain: str) -> list[Any]:
@@ -78,10 +78,10 @@ class MijnHostConnection:
 		res = self.conn.getresponse()
 		data = json.loads(res.read().decode("utf-8"))
 		logger.debug("Response: %s", data)
-		if data["status"] != 200:
-			raise errors.PluginError(f"{data["status"]}: {data["status_description"]}")
+		if data['status'] != 200:
+			raise errors.PluginError(f"{data['status']}: {data['status_description']}")
 
-		return data["data"]["records"]
+		return data['data']['records']
 
 	def put_dns_records(self, domain, payload):
 		"""
@@ -98,7 +98,7 @@ class MijnHostConnection:
 		res = self.conn.getresponse()
 		data = json.loads(res.read().decode("utf-8"))
 
-		if data["status"] != 200:
+		if data['status'] != 200:
 			raise errors.PluginError(f"{data['status']}: {data['status_description']}")
 
 		return True
@@ -120,7 +120,7 @@ class MijnHostConnection:
 		# search for dns record
 		for record in records:
 
-			if record["name"] == record_name:
+			if record['name'] == record_name:
 				return record
 
 		return None
@@ -150,11 +150,11 @@ class MijnHostConnection:
 		# search for dns record and update if applicable
 		for record in records:
 
-			if record["name"] == record_name:
+			if record['name'] == record_name:
 
-				record["value"] = record_new_value
+				record['value'] = record_new_value
 				if ttl > 0:
-					record["ttl"] = ttl
+					record['ttl'] = ttl
 				updated = True
 
 		if not updated:
@@ -191,7 +191,7 @@ class MijnHostConnection:
 		# search for dns record and update if applicable
 		for record in records:
 
-			if record["name"] == record_name:
+			if record['name'] == record_name:
 				records.remove(record)
 
 		payload = json.dumps({"records": records})

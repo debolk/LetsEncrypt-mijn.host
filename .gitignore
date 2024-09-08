@@ -1,6 +1,8 @@
 dns_mijnhost/.idea/
 dns_mijnhost/dns_mijnhost.iml
 certbot/
+credentials.ini
+build/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
