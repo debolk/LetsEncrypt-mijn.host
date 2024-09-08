@@ -25,6 +25,11 @@ To test plugin in certbot dev environment:
 
 ```
 . certbot/venv/bin/activate
-pip install -e plugin/
+pip install -e dns_mijnhost/
 certbot_test plugins
+```
+
+Dry-run test command:
+```
+certbot certonly -a dns-mijnhost --dns-mijnhost-api_key <API_KEY> -d bolkhuis.nl --dry-run --config-dir test/config --work-dir test/work --logs-dir test/logs
 ```
