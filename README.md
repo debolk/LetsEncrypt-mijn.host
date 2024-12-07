@@ -1,8 +1,12 @@
+Requirements:
+ - python3
+ - python3-pip
+ - certbot (installed by pip)
 
 To install download the released .whl file and in a terminal in the same directory run:
 
 ```
-pip install certbot_dns_mijnhost-<VERSION>-py3-none-any.whl
+pip install certbot_dns_mijnhost-<VERSION>-py3-none-any.whl --break-system-packages
 ```
 ------------------------------------------
 Usage:
