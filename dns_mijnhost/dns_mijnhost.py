@@ -5,6 +5,7 @@ Import json to format responses to dicts
 import http.client
 import json
 import logging
+import os
 from typing import Any, Callable, Optional
 
 from certbot import errors
@@ -212,11 +213,18 @@ class Authenticator(dns_common.DNSAuthenticator):
 		self.api_key = None
 		self.credentials: Optional[CredentialsConfiguration] = None
 
+	@staticmethod
+	def cred_file(string):
+		if not os.path.isfile(string):
+			raise FileNotFoundError(f"File {string} not found")
+		return os.path.abspath(string)
+
 	@classmethod
 	def add_parser_arguments(cls, add: Callable[..., None],
 							default_propagation_seconds: int = 20) -> None:
 		super().add_parser_arguments(add, default_propagation_seconds)
-		add('credentials', help='Mijn.host credentials INI file')
+		add('credentials', help='Mijn.host credentials INI file', type=Authenticator.cred_file)
+
 
 	def more_info(self) -> str:
 		return ("This plugin configures a DNS TXT record in mijn.host " +
@@ -227,6 +235,8 @@ class Authenticator(dns_common.DNSAuthenticator):
 		key = credentials.conf('api-key')
 		if not key:
 			raise errors.PluginError(f"No API key configured in {credentials.confobj.filename}")
+		elif not credentials.confobj.filename.startswith('/'):
+			raise errors.PluginError(f"Credentials object should be specified as absolute path: {credentials.confobj.filename}")
 
 	def _setup_credentials(self) -> None:
 		self.credentials = self._configure_credentials(
