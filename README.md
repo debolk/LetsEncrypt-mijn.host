@@ -1,7 +1,7 @@
 Requirements:
  - python3
  - python3-pip
- - certbot (installed by pip)
+ - certbot **(installed by pip)**
 
 To install download the released .whl file and in a terminal in the same directory run:
 
