@@ -1,3 +1,5 @@
+Mijn.Host has released their own version of a certbot plugin: https://github.com/mijnhost/certbot-dns-mijn-host
+
 Requirements:
  - python3
  - python3-pip
